@@ -313,3 +313,70 @@ describe('requests', function () {
       done();
       return;
     }
+
+    var input = new Int8Array(2);
+    input[0] = 1;
+    input[1] = 2;
+
+    axios.post('/foo', input);
+
+    getAjaxRequest().then(function (request) {
+      var output = new Int8Array(request.params);
+      expect(output.length).toEqual(2);
+      expect(output[0]).toEqual(1);
+      expect(output[1]).toEqual(2);
+      done();
+    });
+  });
+
+  it('should support array buffer response', function (done) {
+    // ArrayBuffer doesn't exist in IE8/9
+    if (isOldIE && typeof ArrayBuffer === 'undefined') {
+      done();
+      return;
+    }
+
+    var response;
+
+    function str2ab(str) {
+      var buff = new ArrayBuffer(str.length * 2);
+      var view = new Uint16Array(buff);
+      for ( var i=0, l=str.length; i<l; i++) {
+        view[i] = str.charCodeAt(i);
+      }
+      return buff;
+    }
+
+    axios('/foo', {
+      responseType: 'arraybuffer'
+    }).then(function (data) {
+      response = data;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        response: str2ab('Hello world')
+      });
+
+      setTimeout(function () {
+        expect(response.data.byteLength).toBe(22);
+        done();
+      }, 100);
+    });
+  });
+
+  it('should support URLSearchParams', function (done) {
+    var params = new URLSearchParams();
+    params.append('param1', 'value1');
+    params.append('param2', 'value2');
+
+    axios.post('/foo', params);
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders['Content-Type']).toBe('application/x-www-form-urlencoded;charset=utf-8');
+      expect(request.params).toBe('param1=value1&param2=value2');
+      done();
+    });
+  });
+});
