@@ -111,3 +111,37 @@ const handleUserResponse = (response: AxiosResponse<User>) => {
 	console.log(response.headers);
 	console.log(response.config);
 };
+
+axios.get<User>('/user?id=12345')
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.get<User>('/user', { params: { id: 12345 } })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.head<User>('/user')
+	.then(handleResponse)
+	.catch(handleError);
+
+axios.delete<User>('/user')
+	.then(handleResponse)
+	.catch(handleError);
+
+axios.post<User>('/user', { foo: 'bar' })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.post<User>('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.put<User>('/user', { foo: 'bar' })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+axios.patch<User>('/user', { foo: 'bar' })
+	.then(handleUserResponse)
+	.catch(handleError);
+
+// Instances
