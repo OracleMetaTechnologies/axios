@@ -42,3 +42,72 @@ const config: AxiosRequestConfig = {
   },
   cancelToken: new axios.CancelToken((cancel: Canceler) => {})
 };
+
+const handleResponse = (response: AxiosResponse) => {
+  console.log(response.data);
+  console.log(response.status);
+  console.log(response.statusText);
+  console.log(response.headers);
+  console.log(response.config);
+};
+
+const handleError = (error: AxiosError) => {
+  if (error.response) {
+    console.log(error.response.data);
+    console.log(error.response.status);
+    console.log(error.response.headers);
+  } else {
+    console.log(error.message);
+  }
+};
+
+axios(config)
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.get('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.get('/user', { params: { id: 12345 } })
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.head('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.delete('/user')
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.post('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.put('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+axios.patch('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+// Typed methods
+interface User {
+  id: number;
+  name: string;
+}
+
+const handleUserResponse = (response: AxiosResponse<User>) => {
+	console.log(response.data.id);
+	console.log(response.data.name);
+	console.log(response.status);
+	console.log(response.statusText);
+	console.log(response.headers);
+	console.log(response.config);
+};
