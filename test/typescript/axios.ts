@@ -206,3 +206,70 @@ const responseInterceptorId: number = axios.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: any) => Promise.reject(error)
 );
+
+axios.interceptors.response.eject(responseInterceptorId);
+
+axios.interceptors.response.use(
+  (response: AxiosResponse) => Promise.resolve(response),
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.response.use((response: AxiosResponse) => response);
+axios.interceptors.response.use((response: AxiosResponse) => Promise.resolve(response));
+
+// Adapters
+
+const adapter: AxiosAdapter = (config: AxiosRequestConfig) => {
+  const response: AxiosResponse = {
+    data: { foo: 'bar' },
+    status: 200,
+    statusText: 'OK',
+    headers: { 'X-FOO': 'bar' },
+    config
+  };
+  return Promise.resolve(response);
+};
+
+axios.defaults.adapter = adapter;
+
+// axios.all
+
+const promises = [
+  Promise.resolve(1),
+  Promise.resolve(2)
+];
+
+const promise: Promise<number[]> = axios.all(promises);
+
+// axios.spread
+
+const fn1 = (a: number, b: number, c: number) => `${a}-${b}-${c}`;
+const fn2: (arr: number[]) => string = axios.spread(fn1);
+
+// Promises
+
+axios.get('/user')
+  .then((response: AxiosResponse) => 'foo')
+  .then((value: string) => {});
+
+axios.get('/user')
+  .then((response: AxiosResponse) => Promise.resolve('foo'))
+  .then((value: string) => {});
+
+axios.get('/user')
+  .then((response: AxiosResponse) => 'foo', (error: any) => 'bar')
+  .then((value: string) => {});
+
+axios.get('/user')
+  .then((response: AxiosResponse) => 'foo', (error: any) => 123)
+  .then((value: string | number) => {});
+
+axios.get('/user')
+  .catch((error: any) => 'foo')
+  .then((value: string) => {});
+
+axios.get('/user')
+  .catch((error: any) => Promise.resolve('foo'))
+  .then((value: string) => {});
+
+// Cancellation
