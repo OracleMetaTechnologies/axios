@@ -133,3 +133,50 @@ describe('requests', function () {
       });
     });
   });
+
+  it('should resolve when validateStatus returns true', function (done) {
+    var resolveSpy = jasmine.createSpy('resolve');
+    var rejectSpy = jasmine.createSpy('reject');
+
+    axios('/foo', {
+      validateStatus: function (status) {
+        return status === 500;
+      }
+    }).then(resolveSpy)
+      .catch(rejectSpy)
+      .then(function () {
+        expect(resolveSpy).toHaveBeenCalled();
+        expect(rejectSpy).not.toHaveBeenCalled();
+        done();
+      });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 500
+      });
+    });
+  });
+
+  // https://github.com/axios/axios/issues/378
+  it('should return JSON when rejecting', function (done) {
+    var response;
+
+    axios('/api/account/signup', {
+      username: null,
+      password: null
+    }, {
+      method: 'post',
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+    .catch(function (error) {
+      response = error.response;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 400,
+        statusText: 'Bad Request',
+        responseText: '{"error": "BAD USERNAME", "code": 1}'
+      });
