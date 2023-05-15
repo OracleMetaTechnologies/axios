@@ -504,3 +504,42 @@ module.exports = {
             response.end(proxyAuth);
           });
         });
+
+      }).listen(4000, function() {
+        axios.get('http://localhost:4444/', {
+          proxy: {
+            host: 'localhost',
+            port: 4000,
+            auth: {
+              username: 'user',
+              password: 'pass'
+            }
+          },
+          headers: {
+            'Proxy-Authorization': 'Basic abc123'
+          }
+        }).then(function(res) {
+          var base64 = new Buffer('user:pass', 'utf8').toString('base64');
+          test.equal(res.data, 'Basic ' + base64, 'should authenticate to the proxy');
+          test.done();
+        });
+      });
+    });
+  },
+
+  testCancel: function(test) {
+    var source = axios.CancelToken.source();
+    server = http.createServer(function (req, res) {
+      // call cancel() when the request has been sent, but a response has not been received
+      source.cancel('Operation has been canceled.');
+    }).listen(4444, function() {
+      axios.get('http://localhost:4444/', {
+        cancelToken: source.token
+      }).catch(function (thrown) {
+        test.ok(thrown instanceof axios.Cancel, 'Promise must be rejected with a Cancel obejct');
+        test.equal(thrown.message, 'Operation has been canceled.');
+        test.done();
+      });
+    });
+  }
+};
