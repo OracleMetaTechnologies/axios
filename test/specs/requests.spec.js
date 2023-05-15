@@ -180,3 +180,57 @@ describe('requests', function () {
         statusText: 'Bad Request',
         responseText: '{"error": "BAD USERNAME", "code": 1}'
       });
+
+      setTimeout(function () {
+        expect(typeof response.data).toEqual('object');
+        expect(response.data.error).toEqual('BAD USERNAME');
+        expect(response.data.code).toEqual(1);
+        done();
+      }, 100);
+    });
+  });
+
+  it('should make cross domian http request', function (done) {
+    var response;
+
+    axios.post('www.someurl.com/foo').then(function(res){
+      response = res;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        statusText: 'OK',
+        responseText: '{"foo": "bar"}',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      setTimeout(function () {
+        expect(response.data.foo).toEqual('bar');
+        expect(response.status).toEqual(200);
+        expect(response.statusText).toEqual('OK');
+        expect(response.headers['content-type']).toEqual('application/json');
+        done();
+      }, 100);
+    });
+  });
+
+
+  it('should supply correct response', function (done) {
+    var response;
+
+    axios.post('/foo').then(function (res) {
+      response = res;
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 200,
+        statusText: 'OK',
+        responseText: '{"foo": "bar"}',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
