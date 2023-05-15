@@ -234,3 +234,82 @@ describe('requests', function () {
           'Content-Type': 'application/json'
         }
       });
+
+      setTimeout(function () {
+        expect(response.data.foo).toEqual('bar');
+        expect(response.status).toEqual(200);
+        expect(response.statusText).toEqual('OK');
+        expect(response.headers['content-type']).toEqual('application/json');
+        done();
+      }, 100);
+    });
+  });
+
+  // https://github.com/axios/axios/issues/201
+  it('should fix IE no content error', function (done) {
+    var response;
+
+    axios('/foo').then(function (res) {
+      response = res
+    });
+
+    getAjaxRequest().then(function (request) {
+      request.respondWith({
+        status: 1223,
+        statusText: 'Unknown'
+      });
+
+      setTimeout(function () {
+        expect(response.status).toEqual(204);
+        expect(response.statusText).toEqual('No Content');
+        done();
+      }, 100);
+    });
+  });
+
+  it('should allow overriding Content-Type header case-insensitive', function (done) {
+    var response;
+    var contentType = 'application/vnd.myapp.type+json';
+
+    axios.post('/foo', { prop: 'value' }, {
+      headers: {
+        'content-type': contentType
+      }
+    }).then(function (res) {
+      response = res;
+    });
+
+    getAjaxRequest().then(function (request) {
+      expect(request.requestHeaders['Content-Type']).toEqual(contentType);
+      done();
+    });
+  });
+
+  it('should support binary data as array buffer', function (done) {
+    // Int8Array doesn't exist in IE8/9
+    if (isOldIE && typeof Int8Array === 'undefined') {
+      done();
+      return;
+    }
+
+    var input = new Int8Array(2);
+    input[0] = 1;
+    input[1] = 2;
+
+    axios.post('/foo', input.buffer);
+
+    getAjaxRequest().then(function (request) {
+      var output = new Int8Array(request.params);
+      expect(output.length).toEqual(2);
+      expect(output[0]).toEqual(1);
+      expect(output[1]).toEqual(2);
+      done();
+    });
+  });
+
+  it('should support binary data as array buffer view', function (done) {
+    // Int8Array doesn't exist in IE8/9
+    if (isOldIE && typeof Int8Array === 'undefined') {
+      done();
+      return;
+    }
