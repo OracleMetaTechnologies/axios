@@ -273,3 +273,16 @@ axios.get('/user')
   .then((value: string) => {});
 
 // Cancellation
+
+const source: CancelTokenSource = axios.CancelToken.source();
+
+axios.get('/user', {
+  cancelToken: source.token
+}).catch((thrown: AxiosError | Cancel) => {
+  if (axios.isCancel(thrown)) {
+    const cancel: Cancel = thrown;
+    console.log(cancel.message);
+  }
+});
+
+source.cancel('Operation has been canceled.');
