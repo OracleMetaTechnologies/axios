@@ -145,3 +145,64 @@ axios.patch<User>('/user', { foo: 'bar' })
 	.catch(handleError);
 
 // Instances
+
+const instance1: AxiosInstance = axios.create();
+const instance2: AxiosInstance = axios.create(config);
+
+instance1(config)
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.request(config)
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.get('/user?id=12345')
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.get('/user', { params: { id: 12345 } })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.post('/user', { foo: 'bar' })
+  .then(handleResponse)
+  .catch(handleError);
+
+instance1.post('/user', { foo: 'bar' }, { headers: { 'X-FOO': 'bar' } })
+  .then(handleResponse)
+  .catch(handleError);
+
+// Defaults
+
+axios.defaults.baseURL = 'https://api.example.com/';
+axios.defaults.headers.common['Authorization'] = 'token';
+axios.defaults.headers.post['X-FOO'] = 'bar';
+axios.defaults.timeout = 2500;
+
+instance1.defaults.baseURL = 'https://api.example.com/';
+instance1.defaults.headers.common['Authorization'] = 'token';
+instance1.defaults.headers.post['X-FOO'] = 'bar';
+instance1.defaults.timeout = 2500;
+
+// Interceptors
+
+const requestInterceptorId: number = axios.interceptors.request.use(
+  (config: AxiosRequestConfig) => config,
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.request.eject(requestInterceptorId);
+
+axios.interceptors.request.use(
+  (config: AxiosRequestConfig) => Promise.resolve(config),
+  (error: any) => Promise.reject(error)
+);
+
+axios.interceptors.request.use((config: AxiosRequestConfig) => config);
+axios.interceptors.request.use((config: AxiosRequestConfig) => Promise.resolve(config));
+
+const responseInterceptorId: number = axios.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  (error: any) => Promise.reject(error)
+);
